@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>轮播</title>
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            list-style: none;
+            border: 0;
+        }
+
+        .content {
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .screen {
+            width: 50vw;
+            height: 20vw;
+            position:relative;
+            overflow: hidden;
+            border-radius: 14px;
+        }
+
+        .screen ul {
+            width: 50vw;
+            height: 20vw;
+            left: 0;
+            top: 0;
+            position: absolute;
+            display: flex;
+        }
+
+        .screen li {
+            width: 50vw;
+            height: 20pvw;
+            float: left;
+        }
+
+        .screen img {
+            width: 50vw;
+            height: 20vw;
+            object-fit: cover;
+        }
+
+        .content ol {
+            position: absolute;
+            right: calc(50% - 18px);
+            bottom: 15px;
+            text-align: center;
+        }
+
+        .content ol li {
+            width: 5px;
+            height: 5px;
+            border-radius: 5px;
+            background: #fff;
+            margin-left: 5px;
+            border: 1px solid #000;
+            cursor: pointer;
+        }
+
+        .content ol li.current {
+            background: red;
+        }
+
+        #arr span {
+            height: 30px;
+            width: 20px;
+            position: absolute;
+            left: 0px;
+            top: calc(50% - 15px);
+            line-height: 30px;
+            background: #000;
+            opacity: 0.3;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 15px;
+            color: #fff;
+            font-family: '黑体';
+        }
+
+        #arr #left {
+            padding-left: 5px;
+            border-radius: 0 15px 15px 0;
+        }
+
+        #arr #right {
+            position: absolute;
+            text-align: end;
+            padding-right: 5px;
+            right: 0px;
+            left: auto;
+            border-radius: 15px 0 0 15px;
+        }
+    </style>
+</head>
+<style>
+
+</style>
+
+<body>
+    <div class="content">
+        <div class="screen" id="screen">
+            <ul id="ul" style="left: 0">
+
+            </ul>
+            <ol class="footer">
+            </ol>
+            <div id="arr">
+                <span id="left">
+                    < </span>
+                        <span id="right">></span>
+            </div>
+        </div>
+    </div>
+</body>
+
+<script>
+    a = function () {
+        console.log(imgs)
+        let content = document.getElementsByClassName("content")[0];
+        let screen = document.getElementsByClassName("screen")[0];
+        let imgWidth = screen.offsetWidth;
+        let ul = document.getElementById("ul");
+        let ol = document.getElementsByClassName("footer")[0];
+        let div = document.getElementById("arr");
+        let spanArr = div.children;
+
+        for (let i = 0; i < imgs.length; i++) {
+            let child = document.createElement('li')
+            child.innerHTML = `<a href="${imgs[i].href}"><img src="${imgs[i].img}" title="${imgs[i].desc}"></a>`
+            ul.appendChild(child)
+        }
+
+        let ulNewLi = ul.children[0].cloneNode(true);
+        ul.appendChild(ulNewLi);
+
+        for (let i = 0; i < ul.children.length - 1; i++) {
+            let olNewLi = document.createElement("li");
+            // olNewLi.innerHTML = i + 1;
+            ol.appendChild(olNewLi);
+        }
+
+        let olLiArr = ol.children;
+        olLiArr[0].className = "current";
+
+        for (let i = 0; i < olLiArr.length; i++) {
+            olLiArr[i].index = i;
+            olLiArr[i].onmouseover = function () {
+                for (let j = 0; j < olLiArr.length; j++) {
+                    olLiArr[j].className = "";
+                }
+                this.className = "current";
+                key = square = this.index;
+                animate(ul, -this.index * imgWidth);
+            }
+        }
+
+        let timer = setInterval(autoPlay, 5000);
+
+        let key = 0;
+        let square = 0;
+        function autoPlay() {
+            key++;
+            if (key > olLiArr.length) {
+                ul.style.left = 0;
+                key = 1;
+            }
+            animate(ul, -key * imgWidth);
+            square++;
+            if (square > olLiArr.length - 1) {
+                square = 0;
+            }
+            for (let i = 0; i < olLiArr.length; i++) {
+                olLiArr[i].className = "";
+            }
+            olLiArr[square].className = "current";
+        }
+
+
+        content.onmouseover = function () {
+            div.style.display = "block";
+            clearInterval(timer);
+        }
+        content.onmouseout = function () {
+            div.style.display = "none";
+            timer = setInterval(autoPlay, 5000);
+        }
+
+        spanArr[0].onclick = function () {
+            key--;
+            if (key < 0) {
+                ul.style.left = -imgWidth * (olLiArr.length) + "px";
+                key = olLiArr.length - 1;
+            }
+            animate(ul, -key * imgWidth);
+            square--;
+            if (square < 0) {
+                square = olLiArr.length - 1;
+            }
+            for (let i = 0; i < olLiArr.length; i++) {
+                olLiArr[i].className = "";
+            }
+            olLiArr[square].className = "current";
+        }
+        spanArr[1].onclick = function () {
+            autoPlay();
+        }
+
+
+        function animate(ele, target) {
+            clearInterval(ele.timer);
+
+            ele.timer = setInterval(function () {
+                let speed = target > ele.offsetLeft ? 10 : -10;
+                let val = target - ele.offsetLeft;
+                ele.style.left = ele.offsetLeft + speed + "px";
+                //清除定时器
+                if (Math.abs(val) < Math.abs(speed)) {
+                    ele.style.left = target + "px";
+                    clearInterval(ele.timer);
+                }
+            }, 10);
+        }
+    };
+    let imgs = [];
+
+    try {
+        const xhr = new XMLHttpRequest();
+        xhr.responseType = 'json';
+        xhr.open('GET', 'https://download.kstore.space/download/4587/slide.json');
+        xhr.send();
+        xhr.onreadystatechange = () => {
+            if (xhr.readyState === 4) {
+                if (xhr.status === 200) {
+                    imgs = xhr.response.items;
+                    a()
+                } else {
+                    return fail(xhr.status);
+                }
+            }
+        }
+
+    } catch {
+        throw new Error('404 not found')
+    }
+
+
+
+
+
+</script>
+
+</html>
